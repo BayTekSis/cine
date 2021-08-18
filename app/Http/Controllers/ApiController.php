@@ -26,11 +26,17 @@ public function user(){
             'email' => $request->email,
             'password' => $request->password
         ];
-        if (auth()->attempt($data)){
-            $token = auth()->user()->createToken('UserToken')->accessToken;
-            return response()->json(['token'=>$token],200);
+        if (Auth::attempt($data)){
+            $token=Auth::user()->createToken('UserToken')->accessToken;
+
+
+            return response()->json(
+                [
+                    "status"=>true,"token"=>$token,"user_name"=>Auth::user()->name,"user_id"=>Auth::user()->id
+                ]
+                ,200);
         }else{
-            return response()->json(['hata'=>'Yetkisiz Giriş Denemesi'],200);
+            return response()->json(['status'=>false,'error'=>'Yetkisiz Giriş Denemesi'],200);
 
         }
 
@@ -55,17 +61,13 @@ public function user(){
         $token = $register_result->createToken('UserToken')->accessToken;
 
         if ($register_result) {
-            return response()->json(['token' => $token], 200);
+
+            return response()->json([ "status"=>true,"token"=>$token,"user_name"=>Auth::user()->name,"user_id"=>Auth::user()->id], 200);
         } else {
-            return response()->json('Kullanıcı kaydı sırasında bir sorun oluştu.', 400);
+            return response()->json(['status'=>false,'error'=>'Kullanıcı kaydı sırasında bir sorun oluştu.'], 400);
         }
     }
 
-    public function deneme()
-    {
-
-        return 'deneme';
-    }
 
     public function cities()
     {
@@ -175,9 +177,9 @@ public function user(){
     }
 
     public function ticket_register(Request $request){
-        if ($request->seat_numbers==null) return response()->json(['hata'=>'Bilet Satın Alabilmek İçin En Az Bir Koltuk Seçmelisiniz.']);
-//        if (Auth::user()==null) return response()->json(['hata'=>'Lütfen Giriş Yapınız.']);
-        $user_id=1;
+        if ($request->seat_numbers==null) return response()->json(['error'=>'Bilet Satın Alabilmek İçin En Az Bir Koltuk Seçmelisiniz.']);
+//        if (Auth::user()==null) return response()->json(['error'=>'Lütfen Giriş Yapınız.']);
+        $user_id=$request->user_id;
         $user=User::where('id',$user_id)->first();
         $seat_numbers_raw=explode(',',$request->seat_numbers);
         $seat_numbers=[];
@@ -189,13 +191,13 @@ public function user(){
         }
         $cine_film_number=array_unique($cine_film_numbers_raw);
         if(sizeof($cine_film_number)!=1){
-            return response()->json(['hata'=>'Lütfen Bir Seanstan Bilet Alınız.']);
+            return response()->json(['error'=>'Lütfen Bir Seanstan Bilet Alınız.']);
         }
         $cinema_film=DB::table('cinema_films')->where('id',$cine_film_number)->first();
 
         $ticket_results=[];
         if(DB::table('tickets')->where('ticket_cinema_film_id',$cinema_film->id)->whereIn('ticket_seat_id',$seat_numbers)->exists()){
-            return response()->json(['hata'=>'Bu Koltuk Daha Önceden Satın Alınmış']);
+            return response()->json(['error'=>'Bu Koltuk Daha Önceden Satın Alınmış']);
         }
         foreach ($seat_numbers as $sn){
 
@@ -217,9 +219,50 @@ public function user(){
                 array_push($ticket_results,$ticket_result);
         }
         $response=DB::table('tickets')
+            ->join('cinemas','cinemas.id','=','tickets.ticket_cinema_id')
+            ->join('films','films.id','=','tickets.ticket_film_id')
+            ->join('seances','seances.id','=','tickets.ticket_seance_id')
+            ->join('seats','seats.id','=','tickets.ticket_seat_id')
+            ->join('users','users.id','=','tickets.ticket_user_id')
+            ->join('cinema_films','cinema_films.id','=','tickets.ticket_cinema_film_id')
+            ->select(
+                'cinemas.cinema_name',
+                'films.film_name',
+                'films.film_price',
+                'films.film_file',
+                'seances.seance_time',
+                'seats.seat_name',
+                'users.name',
+                'cinema_films.cinema_film_date_start'
+            )
             ->whereIn('tickets.id',$ticket_results)
             ->get();
-
         return response()->json($response,200);
     }
+    public function mytickets(Request $request){
+        $user_id=intval($request->user_id);
+        $response=DB::table('tickets')
+            ->join('cinemas','cinemas.id','=','tickets.ticket_cinema_id')
+            ->join('films','films.id','=','tickets.ticket_film_id')
+            ->join('seances','seances.id','=','tickets.ticket_seance_id')
+            ->join('seats','seats.id','=','tickets.ticket_seat_id')
+            ->join('users','users.id','=','tickets.ticket_user_id')
+            ->join('cinema_films','cinema_films.id','=','tickets.ticket_cinema_film_id')
+            ->select(
+                'tickets.id as ticket_id',
+                'cinemas.cinema_name',
+                'films.film_name',
+                'films.film_price',
+                'films.film_file',
+                'seances.seance_time',
+                'seats.seat_name',
+                'users.name',
+                'cinema_films.cinema_film_date_start'
+            )
+            ->where('ticket_user_id',$user_id)
+            ->get();
+        return response()->json($response,200);
+
+    }
+
 }

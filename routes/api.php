@@ -31,6 +31,9 @@ Route::middleware('auth:api')->group(function (){
 
 
     Route::get('user',[\App\Http\Controllers\ApiController::class,'user']);
+    Route::post('mytickets',[\App\Http\Controllers\ApiController::class,'mytickets'])->name('api.mytickets');
+    Route::post('ticket-register',[\App\Http\Controllers\ApiController::class,'ticket_register'])->name('ticket.register');
+
 });
 
 Route::get('cities',[\App\Http\Controllers\ApiController::class,'cities']);
@@ -38,4 +41,3 @@ Route::get('films/city={city_id}&genre={genre_id}&cinema={cinema_id}',[\App\Http
 Route::get('film-cities/{film_id}',[\App\Http\Controllers\ApiController::class,'film_cities']);
 
 Route::post('tickets',[\App\Http\Controllers\ApiController::class,'tickets']);
-Route::post('ticket-register',[\App\Http\Controllers\ApiController::class,'ticket_register'])->name('ticket.register');

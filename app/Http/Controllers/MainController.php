@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 
 class MainController extends Controller
 {
@@ -23,7 +24,10 @@ class MainController extends Controller
 
     public function detail($slug)
     {
-        $data['film'] = DB::table('films')->where('film_slug', $slug)->join('genres', 'films.genre_id', '=', 'genres.id')->first();
+        $data['film'] = DB::table('films')->where('film_slug', $slug)
+            ->join('genres', 'films.genre_id', '=', 'genres.id')
+            ->select('films.*','genres.genre_name')
+            ->first();
 
 
         $film_array_raw = DB::table('cinema_films')
@@ -54,12 +58,17 @@ class MainController extends Controller
         $data['film_details'] = null;
         $data['button'] = true;
 
+        $data['v_cinema']=false;
+        $data['v_buy']=false;
+
         return view('default.detail', compact('data'));
     }
 
     public function detail_city($slug, $city)
     {
-        $data['film'] = DB::table('films')->where('film_slug', $slug)->join('genres', 'films.genre_id', '=', 'genres.id')->first();
+        $data['film'] = DB::table('films')->where('film_slug', $slug)
+            ->join('genres', 'films.genre_id', '=', 'genres.id')
+            ->select('films.*','genres.genre_name')->first();
 
         $film_array_raw = DB::table('cinema_films')
             ->join('cinemas', 'cinemas.id', '=', 'cinema_films.cinema_film_cinema_id')
@@ -99,6 +108,8 @@ class MainController extends Controller
         $data['film_details'] = null;
         $data['button'] = false;
 
+        $data['v_cinema']=true;
+        $data['v_buy']=false;
 
         return view('default.detail', compact('data'));
     }
@@ -106,8 +117,10 @@ class MainController extends Controller
     public function detail_cinema($slug, $city, $cinema)
     {
         $selected_cinema = intval($cinema);
-        $data['film'] = DB::table('films')->where('film_slug', $slug)->join('genres', 'films.genre_id', '=', 'genres.id')->first();
-
+        $data['film'] = DB::table('films')->where('film_slug', $slug)
+            ->join('genres', 'films.genre_id', '=', 'genres.id')
+            ->select('films.*','genres.genre_name')
+            ->first();
         $film_array_raw = DB::table('cinema_films')
             ->join('cinemas', 'cinemas.id', '=', 'cinema_films.cinema_film_cinema_id')
             ->where('cinema_film_film_id', $data['film']->id)
@@ -162,6 +175,9 @@ class MainController extends Controller
         }
         $data['button'] = false;
         $data['seats'] = DB::table('seats')->get();
+
+        $data['v_cinema']=true;
+        $data['v_buy']=true;
         return view('default.detail', compact('data'));
     }
 
@@ -188,11 +204,81 @@ class MainController extends Controller
         return view('default.login');
 
     }
+    public function logout(){
+            session()->forget('mytoken');
+            session()->forget('user_name');
+            session()->forget('user_id');
+            return redirect(route('main'))->with('success','Başarıyla Çıkış Yapıldı');
+    }
+    public function loginPost(Request $request)
+    {
+        $response = Http::asForm()->post(route('api.login'), [
+            'email' => $request->email,
+            'password' => $request->password,
+        ]);
+        if (isset($response["token"])){
+            session()->put('mytoken',$response["token"]);
+            session()->put('user_name',$response["user_name"]);
+            session()->put('user_id',$response["user_id"]);
+            return redirect(route('main'));
+        }else{
+            return redirect()->back();
+        }
+
+    }
 
     public function register()
     {
 
         return view('default.register');
+
+    }
+    public function mytickets(){
+        $token=session('mytoken');
+        $user_id=session('user_id');
+        $response = Http::withHeaders([
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer '.$token,
+        ])->asForm()->post(route('api.mytickets'),
+            [
+                "user_id"=>$user_id
+            ]);
+        $tickets=json_decode($response->body());
+
+//        $response=Http::get('http://cine/mytickets',[
+//            'headers'=>[
+//                'Authorization' => 'Bearer '.$token,
+//                'Accept' => 'application/json',
+//            ]
+//        ]);
+//        $response = $client->request('POST', '/api/user', [
+//            'headers' => [
+//                'Authorization' => 'Bearer '.$token,
+//                'Accept' => 'application/json',
+//            ],
+//        ]);
+        return view('default.mytickets',compact('tickets'));
+    }
+
+    public function buy(Request $request){
+        if (!session()->has('mytoken')) return redirect(route('login'))->with('error','Bilet Satın Alabilmek İçin Giriş Yapmalısınız.');
+        $token=session('mytoken');
+        $user_id=session('user_id');
+        $response = Http::withHeaders([
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer '.$token,
+        ])->asForm()->post(route('ticket.register'),
+            [
+                "film_id"=>$request->film_id,
+                "city_id"=>$request->city_id,
+                "cinema_id"=>$request->cinema_id,
+                "seat_numbers"=>$request->seat_numbers,
+                "user_id"=>$user_id
+            ]);
+        $tickets=json_decode($response->body());
+        if (isset($tickets->error)) return redirect()->back()->with('error',$tickets->error);
+
+        return view('default.mytickets',compact('tickets'));
 
     }
 

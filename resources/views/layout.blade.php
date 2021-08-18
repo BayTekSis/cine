@@ -72,6 +72,12 @@
                             <li class="header__nav-item">
                                 <a href="/filmler" class="header__nav-link">Filmler</a>
                             </li>
+
+                            @if(session()->has('user_name'))
+                            <li class="header__nav-item" >
+                                <a href="{{route('logout')}}" class="header__nav-link">Çıkış Yap</a>
+                            </li>
+                            @endif
                             <!-- dropdown -->
                             <!-- end dropdown -->
 
@@ -89,11 +95,18 @@
                             </button>
 
 
+                            @if(session()->has('user_name'))
+                                <a href="{{route('mytickets')}}" class="header__sign-in">
+                                    <i class="icon ion-ios-log-in"></i>
+                                    <span>{{session('user_name')}}</span>
+                                </a>
+                            @else
+                                <a href="/login" class="header__sign-in">
+                                    <i class="icon ion-ios-log-in"></i>
+                                    <span>Giriş Yap</span>
+                                </a>
+                                @endif
 
-                            <a href="/login" class="header__sign-in">
-                                <i class="icon ion-ios-log-in"></i>
-                                <span>Giriş Yap</span>
-                            </a>
 
                         </div>
                         <!-- end header auth -->
@@ -135,6 +148,7 @@
 @yield('films')
 @yield('login')
 @yield('register')
+@yield('mytickets')
 <!-- end home -->
 
 <!-- content -->

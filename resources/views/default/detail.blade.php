@@ -111,25 +111,27 @@
                                         </ul>
                                     </div>
 
+                                    @if($data['v_cinema'])
+                                        <div class="filter__item" id="filter__cinema">
+                                            <span class="filter__item-label">SİNEMA:</span>
 
-                                    <div class="filter__item" id="filter__cinema">
-                                        <span class="filter__item-label">SİNEMA:</span>
+                                            <div class="filter__item-btn dropdown-toggle" role="navigation"
+                                                 id="filter-cinema" data-toggle="dropdown" aria-haspopup="true"
+                                                 aria-expanded="false">
+                                                <input type="button" value="{{$data['cinema_name']}}">
+                                                <span></span>
+                                            </div>
 
-                                        <div class="filter__item-btn dropdown-toggle" role="navigation"
-                                             id="filter-cinema" data-toggle="dropdown" aria-haspopup="true"
-                                             aria-expanded="false">
-                                            <input type="button" value="{{$data['cinema_name']}}">
-                                            <span></span>
+                                            <ul class="filter__item-menu dropdown-menu scrollbar-dropdown"
+                                                aria-labelledby="filter-cinema" style="min-width: 250px!important;">
+                                                @foreach($data['cinemas'] as $cinema)
+                                                    <li id="detail_cinema_id-{{$cinema->id}}">{{$cinema->cinema_name}}</li>
+                                                @endforeach
+                                            </ul>
                                         </div>
+                                @endif
 
-                                        <ul class="filter__item-menu dropdown-menu scrollbar-dropdown"
-                                            aria-labelledby="filter-cinema" style="min-width: 250px!important;">
-                                            @foreach($data['cinemas'] as $cinema)
-                                                <li id="detail_cinema_id-{{$cinema->id}}">{{$cinema->cinema_name}}</li>
-                                            @endforeach
-                                        </ul>
-                                    </div>
-                                    <!-- end filter item -->
+                                <!-- end filter item -->
 
                                     <!-- filter item -->
                                 {{--                            <div class="filter__item" id="filter__quality">--}}
@@ -152,12 +154,16 @@
                                 </div>
 
                                 <!-- filter btn -->
-                                <form action="{{route('ticket.register')}}" method="post">
+                                <form action="{{route('buy')}}" method="post">
+                                    @csrf
                                     <input type="hidden" id="film_id" name="film_id" value="{{$data['film']->id}}">
-                                    <input type="hidden" id="city_id" name="city_id" value="{{$city->id}}">
-                                    <input type="hidden" id="cinema_id" name="cinema_id" value="{{$cinema->id}}">
+                                    <input type="hidden" id="city_id" name="city_id" value="">
+                                    <input type="hidden" id="cinema_id" name="cinema_id" value="">
                                     <input type="hidden" id="seat_numbers" name="seat_numbers" value="">
-                                    <button class="filter__btn" type="submit">Satın Al</button>
+
+                                    @if($data['v_buy'])
+                                        <button class="filter__btn" type="submit">Satın Al</button>
+                                    @endif
                                 </form>
 
                                 <!-- end filter btn -->
@@ -206,22 +212,22 @@
                                                                         @if($ticket_seat->ticket_seats_seat_id==$seat->id)
 
 
-                                                                           @php($equal=$seat->id)
-                                                                           @php($equal_name=$seat->seat_name)
+                                                                            @php($equal=$seat->id)
+                                                                            @php($equal_name=$seat->seat_name)
                                                                         @endif
 
 
 
                                                                     @endforeach
                                                                     @if($equal!=-1)
-                                                                            <button
-                                                                                id="{{$detail->cinema_film_id}}-seat-{{$equal}}"
-                                                                                class="filter__btn  filter__btn__disabled">{{$equal_name}}</button>
-                                                                        @else
-                                                                            <button
-                                                                                id="{{$detail->cinema_film_id}}-seat-{{$seat->id}}"
-                                                                                class="filter__btn filter__btn_x cinema_seat">{{$seat->seat_name}}</button>
-                                                                        @endif
+                                                                        <button
+                                                                            id="{{$detail->cinema_film_id}}-seat-{{$equal}}"
+                                                                            class="filter__btn  filter__btn__disabled">{{$equal_name}}</button>
+                                                                    @else
+                                                                        <button
+                                                                            id="{{$detail->cinema_film_id}}-seat-{{$seat->id}}"
+                                                                            class="filter__btn filter__btn_x cinema_seat">{{$seat->seat_name}}</button>
+                                                                    @endif
 
 
                                                                 @else

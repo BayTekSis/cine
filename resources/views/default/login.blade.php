@@ -8,7 +8,7 @@
                 <div class="col-12">
                     <div class="sign__content">
                         <!-- authorization form -->
-                        <form action="{{route('api.login')}}" method="post" class="sign__form">
+                        <form action="{{route('login.post')}}" method="post" class="sign__form">
                             @csrf
                             <a href="/" class="sign__logo">
                                 <img src="/default/img/logo.svg" alt="">
