@@ -33,6 +33,7 @@ Route::middleware('auth:api')->group(function (){
     Route::get('user',[\App\Http\Controllers\ApiController::class,'user']);
     Route::post('mytickets',[\App\Http\Controllers\ApiController::class,'mytickets'])->name('api.mytickets');
     Route::post('ticket-register',[\App\Http\Controllers\ApiController::class,'ticket_register'])->name('ticket.register');
+    Route::post('logout', [\App\Http\Controllers\ApiController::class,'logout'])->name('api.logout');
 
 });
 

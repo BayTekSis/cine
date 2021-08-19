@@ -205,10 +205,19 @@ class MainController extends Controller
 
     }
     public function logout(){
-            session()->forget('mytoken');
-            session()->forget('user_name');
-            session()->forget('user_id');
-            return redirect(route('main'))->with('success','Başarıyla Çıkış Yapıldı');
+        $token=session('mytoken');
+        $response = Http::withHeaders([
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer '.$token,
+        ])->post(route('api.logout'));
+
+        session()->forget('mytoken');
+        session()->forget('user_name');
+        session()->forget('user_id');
+        return redirect(route('main'))->with('success','Başarıyla Çıkış Yapıldı');
+
+
+
     }
     public function loginPost(Request $request)
     {
@@ -231,6 +240,29 @@ class MainController extends Controller
     {
 
         return view('default.register');
+
+    }
+    public function registerpost(Request $request)
+    {
+        if ($request->remember!="on") return redirect()->back()->with('error','Gizlilik Sözleşmesini Kabul Etmeden Kaydolamazsınız.');
+        if ($request->password!=$request->password_confirmation) return redirect()->back()->with('error','Şifreler Birbirleriyle Uyuşmuyor');
+
+        $response = Http::asForm()->post(route('api.register'), [
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => $request->password,
+            'password_confirmation' => $request->password_confirmation,
+        ]);
+        dd($response);
+        if (isset($response["token"])){
+            session()->put('mytoken',$response["token"]);
+            session()->put('user_name',$response["user_name"]);
+            session()->put('user_id',$response["user_id"]);
+            return redirect(route('main'));
+        }else{
+//            return redirect()->back()->with('error',$response["error"]);
+        }
+
 
     }
     public function mytickets(){

@@ -21,6 +21,7 @@ Route::get('/mytickets',[\App\Http\Controllers\MainController::class,'mytickets'
 Route::get('/login',[\App\Http\Controllers\MainController::class,'login'])->name('login');
 Route::get('/logout',[\App\Http\Controllers\MainController::class,'logout'])->name('logout');
 Route::post('/login',[\App\Http\Controllers\MainController::class,'loginPost'])->name('login.post');
+Route::post('/register',[\App\Http\Controllers\MainController::class,'registerpost'])->name('register.post');
 Route::get('/register',[\App\Http\Controllers\MainController::class,'register']);
 Route::get('/filmler',[\App\Http\Controllers\MainController::class,'films'])->name('films');
 Route::get('/',[\App\Http\Controllers\MainController::class,'index'])->name('main');

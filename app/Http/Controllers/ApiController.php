@@ -42,15 +42,29 @@ public function user(){
 
 
     }
+    public function logout(Request $request){
+        $token=$request->user()->token();
+        $token->revoke();
+        $response=["success","Güvenli Çıkış Yaptınız."];
+        return response()->json($response,200);
 
+//        if(Auth::user()->AauthAcessToken()->delete()){
+//            return response()->json(['success'=>'Başarıyla Çıkış Yapıldı'],200);
+//
+//        }else{
+//            return response()->json(['error'=>'Güvenli Çıkış Başarısız'],200);
+//
+//        }
+
+    }
     public function register(Request $request)
     {
 
-        $data = $request->validate([
-            'name' => 'required|max:255',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|confirmed'
-        ]);
+//        $data = $request->validate([
+//            'name' => 'required|max:255',
+//            'email' => 'required|email',
+//            'password' => 'required|confirmed'
+//        ]);
 
         $register_result=User::create([
             "name"=>$request->name,

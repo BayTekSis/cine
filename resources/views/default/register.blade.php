@@ -8,7 +8,7 @@
                 <div class="col-12">
                     <div class="sign__content">
                         <!-- registration form -->
-                        <form action="{{ route('api.register') }}" method="post" class="sign__form">
+                        <form action="{{ route('register.post') }}" method="post" class="sign__form">
                             @csrf
                             <a href="/" class="sign__logo">
                                 <img src="/default/img/logo.svg" alt="">
@@ -30,7 +30,7 @@
                             </div>
 
                             <div class="sign__group sign__group--checkbox">
-                                <input id="remember" name="remember" type="checkbox" checked="checked">
+                                <input id="remember" name="remember" type="checkbox">
                                 <label for="remember"><a href="#">Gizlilik Politikanızı</a> Kabul Ediyorum</label>
                             </div>
 
